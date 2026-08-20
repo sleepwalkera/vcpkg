@@ -75,6 +75,8 @@ jobs:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.vcpkg_triplet }}
       VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.vcpkg_host_triplet }}
       DEPS_BASE_NAME: mixxx-deps
+      CC: gcc-12
+      CXX: g++-12
       DEVELOPER_DIR: ${{ matrix.developer_dir }}
       MIXXX_VERSION: 2.7
     name: ${{ matrix.deps_name }}
@@ -152,6 +154,7 @@ jobs:
           # Most of them are related to Qt-related ports build also include some build essentials as well as the Android SDK manager
           sudo apt-get update && \
           sudo apt-get install -y \
+            g++-12 \
             '^libxcb.*-dev' \
             autoconf \
             autoconf-archive \
@@ -218,6 +221,7 @@ jobs:
       if: startsWith(matrix.deps_name, 'arm64-android')
       run: |
           sudo apt-get install -y \
+            g++-12 \
             google-android-cmdline-tools-13.0-installer \
             openjdk-17-jdk
           yes | sudo sdkmanager "platforms;android-${{ matrix.android_api }}" "platform-tools" "build-tools;${{ matrix.android_version }}" "ndk;${{ matrix.android_ndk }}"
