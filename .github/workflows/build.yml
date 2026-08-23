@@ -61,6 +61,15 @@ jobs:
             vcpkg_triplet: x64-linux
             vcpkg_host_triplet: x64-linux
             check_disk_space: df -h
+          - os: ubuntu-22.04
+            deps_name: x64-linux-glib-dynamic
+            vcpkg_path: /home/runner/mixxx-vcpkg
+            vcpkg_bootstrap: ./bootstrap-vcpkg.sh
+            vcpkg_triplet: x64-linux-glib-dynamic
+            vcpkg_host_triplet: x64-linux-glib-dynamic
+            check_disk_space: df -h
+            cc: gcc-12
+            cxx: g++-12
           - os: ubuntu-24.04
             deps_name: arm64-android
             vcpkg_path: /home/runner/mixxx-vcpkg
@@ -75,6 +84,8 @@ jobs:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.vcpkg_triplet }}
       VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.vcpkg_host_triplet }}
       DEPS_BASE_NAME: mixxx-deps
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
       DEVELOPER_DIR: ${{ matrix.developer_dir }}
       MIXXX_VERSION: 2.7
     name: ${{ matrix.deps_name }}
@@ -177,6 +188,7 @@ jobs:
             libxrender-dev \
             linux-libc-dev \
             nasm \
+            g++-12 \
             pkg-config \
             python3-jinja2
           # Install NuGET
