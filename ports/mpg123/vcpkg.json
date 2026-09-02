@@ -22,5 +22,6 @@
       ],
       "platform": "windows & !mingw"
     }
-  ]
+  ],
+  "port-version": 1
 }
