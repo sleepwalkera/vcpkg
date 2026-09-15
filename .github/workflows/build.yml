@@ -15,61 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2022
-            deps_name: x64-windows
-            vcpkg_path: C:\mixxx-vcpkg
-            vcpkg_bootstrap: .\bootstrap-vcpkg.bat
-            vcpkg_triplet: x64-windows
-            vcpkg_host_triplet: x64-windows
-            check_disk_space: Get-PSDrive
-          - os: windows-11-arm
-            deps_name: arm64-windows
-            vcpkg_path: C:\mixxx-vcpkg
-            vcpkg_bootstrap: .\bootstrap-vcpkg.bat
-            vcpkg_triplet: arm64-windows
-            vcpkg_host_triplet: arm64-windows
-            check_disk_space: Get-PSDrive
-          - os: macos-15-intel
-            deps_name: x64-osx
-            vcpkg_path: /Users/runner/mixxx-vcpkg
-            vcpkg_bootstrap: ./bootstrap-vcpkg.sh
-            vcpkg_triplet: x64-osx-min1100
-            vcpkg_host_triplet: x64-osx-min1100
-            developer_dir: /Applications/Xcode_16.4.app/Contents/Developer
-            check_disk_space: df -h
-          - os: macos-15-intel
-            deps_name: arm64-osx-cross
-            vcpkg_path: /Users/runner/mixxx-vcpkg
-            vcpkg_bootstrap: ./bootstrap-vcpkg.sh
-            vcpkg_triplet: arm64-osx-min1100
-            vcpkg_host_triplet: x64-osx-min1100-release
-            developer_dir: /Applications/Xcode_16.4.app/Contents/Developer
-            check_disk_space: df -h
-          - os: macos-15
-            deps_name: arm64-osx
-            vcpkg_path: /Users/runner/mixxx-vcpkg
-            vcpkg_bootstrap: ./bootstrap-vcpkg.sh
-            vcpkg_triplet: arm64-osx-min1100
-            vcpkg_host_triplet: arm64-osx-min1100
-            developer_dir: /Applications/Xcode_16.4.app/Contents/Developer
-            brew_extra: libtool
-            check_disk_space: df -h
           - os: ubuntu-22.04
             deps_name: x64-linux
             vcpkg_path: /home/runner/mixxx-vcpkg
             vcpkg_bootstrap: ./bootstrap-vcpkg.sh
             vcpkg_triplet: x64-linux
             vcpkg_host_triplet: x64-linux
-            check_disk_space: df -h
-          - os: ubuntu-24.04
-            deps_name: arm64-android
-            vcpkg_path: /home/runner/mixxx-vcpkg
-            vcpkg_bootstrap: ./bootstrap-vcpkg.sh
-            vcpkg_triplet: arm64-android
-            vcpkg_host_triplet: x64-linux-release
-            android_api: 35
-            android_version: 35.0.0
-            android_ndk: 27.2.12479018
             check_disk_space: df -h
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.vcpkg_triplet }}
