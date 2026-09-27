@@ -54,6 +54,13 @@ jobs:
             developer_dir: /Applications/Xcode_16.4.app/Contents/Developer
             brew_extra: libtool
             check_disk_space: df -h
+          - os: ubuntu-22.04
+            deps_name: x64-linux
+            vcpkg_path: /home/runner/mixxx-vcpkg
+            vcpkg_bootstrap: ./bootstrap-vcpkg.sh
+            vcpkg_triplet: x64-linux
+            vcpkg_host_triplet: x64-linux
+            check_disk_space: df -h
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.vcpkg_triplet }}
       VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.vcpkg_host_triplet }}
@@ -81,6 +88,48 @@ jobs:
           brew update-if-needed && brew install automake nasm autoconf-archive nuget ${{ matrix.brew_extra }}
           sudo xcode-select --switch "$DEVELOPER_DIR"
           xcrun --show-sdk-version
+
+    - name: "[Ubuntu] Install dependencies for nuget & vcpkg"
+      if: runner.os == 'Linux'
+      run: |
+          # Install all dependencies needed for the host (x64-linux).
+          # Most of them are related to Qt-related ports build.
+          sudo apt-get update && \
+          sudo apt-get install -y \
+            '^libxcb.*-dev' \
+            autoconf \
+            autoconf-archive \
+            automake \
+            bison \
+            flex \
+            mono-complete \
+            libasound2-dev \
+            libegl1-mesa-dev \
+            libgl1-mesa-dev \
+            libdrm-dev \
+            libgbm-dev \
+            libghc-resolv-dev \
+            libglu1-mesa-dev \
+            libltdl-dev \
+            libsm-dev \
+            libudev-dev \
+            libx11-xcb-dev \
+            libxi-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev \
+            libxrandr-dev \
+            libxrender-dev \
+            linux-libc-dev \
+            nasm \
+            pkg-config \
+            python3-jinja2
+          # Install NuGET
+          sudo curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+          sudo tee /usr/local/bin/nuget <<EOF
+          #!/bin/sh
+          mono /usr/local/bin/nuget.exe "\$@"
+          EOF
+          sudo chmod +x /usr/local/bin/nuget
 
     - name: "Authenticate to GitHub Packages (readwrite)"
       if: runner.os != 'Linux' && github.event_name == 'push' && github.repository_owner == 'mixxxdj'
