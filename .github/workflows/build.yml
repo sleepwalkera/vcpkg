@@ -98,8 +98,11 @@ jobs:
             autoconf autoconf-archive automake bison flex nasm pkgconfig \
             python39 python39-jinja2 alsa-lib-devel mesa-libEGL-devel mesa-libGL-devel \
             mesa-libGLU-devel libdrm-devel libSM-devel libudev-devel \
-            libX11-devel libxcb-devel libXi-devel libXrandr-devel libXrender-devel \
-            libxkbcommon-devel libtool libtool-ltdl-devel gettext gettext-devel \
+            libX11-devel libxcb-devel xcb-util-devel xcb-util-image-devel \
+            xcb-util-keysyms-devel xcb-util-renderutil-devel xcb-util-wm-devel \
+            xcb-util-cursor-devel libXi-devel libXrandr-devel libXrender-devel \
+            libxkbcommon-devel libxkbcommon-x11-devel libtool libtool-ltdl-devel \
+            gettext gettext-devel \
             glibc-devel kernel-headers
           # RHEL 8's default python3 (3.6) is too old for meson; use python39.
           alternatives --set python3 /usr/bin/python3.9
