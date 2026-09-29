@@ -93,7 +93,7 @@ jobs:
       run: |
           dnf install -y epel-release dnf-plugins-core
           dnf config-manager --set-enabled powertools
-          dnf install -y gcc-toolset-12 cmake ninja-build git \
+          dnf install -y gcc-toolset-12 cmake ninja-build git curl unzip tar \
             autoconf autoconf-archive automake bison flex nasm pkgconfig \
             python3-jinja2 alsa-lib-devel mesa-libEGL-devel mesa-libGL-devel \
             mesa-libGLU-devel libdrm-devel libSM-devel libudev-devel \
