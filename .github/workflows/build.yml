@@ -99,7 +99,8 @@ jobs:
             python3-jinja2 alsa-lib-devel mesa-libEGL-devel mesa-libGL-devel \
             mesa-libGLU-devel libdrm-devel libSM-devel libudev-devel \
             libX11-devel libxcb-devel libXi-devel libXrandr-devel libXrender-devel \
-            libxkbcommon-devel libtool-ltdl-devel glibc-devel kernel-headers
+            libxkbcommon-devel libtool libtool-ltdl-devel gettext gettext-devel \
+            glibc-devel kernel-headers
           source /opt/rh/gcc-toolset-12/enable
           echo "PATH=${PATH}" >> "${GITHUB_ENV}"
           echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
