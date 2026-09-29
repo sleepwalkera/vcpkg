@@ -107,7 +107,8 @@ jobs:
           mkdir -p /home/runner
 
     - name: Move checkout
-      run: cmake -E copy_directory ${{ github.workspace }}/mixxx-vcpkg ${{ matrix.vcpkg_path }}
+      shell: bash
+      run: cmake -E copy_directory "$GITHUB_WORKSPACE/mixxx-vcpkg" "${{ matrix.vcpkg_path }}"
        
   
     - name: "[macOS] Install dependencies for nuget & vcpkg"
