@@ -102,6 +102,9 @@ jobs:
           source /opt/rh/gcc-toolset-12/enable
           echo "PATH=${PATH}" >> "${GITHUB_ENV}"
           echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          # The container has no /home/runner directory; the vcpkg_path
+          # used by the later steps lives there.
+          mkdir -p /home/runner
 
     - name: Move checkout
       run: cmake -E copy_directory ${{ github.workspace }}/mixxx-vcpkg ${{ matrix.vcpkg_path }}
