@@ -60,6 +60,7 @@ jobs:
             vcpkg_bootstrap: ./bootstrap-vcpkg.sh
             vcpkg_triplet: x64-linux
             vcpkg_host_triplet: x64-linux
+            container: rockylinux:8
             check_disk_space: df -h
           - os: ubuntu-22.04-arm
             deps_name: arm64-linux
@@ -67,6 +68,7 @@ jobs:
             vcpkg_bootstrap: ./bootstrap-vcpkg.sh
             vcpkg_triplet: arm64-linux
             vcpkg_host_triplet: arm64-linux
+            container: rockylinux:8
             check_disk_space: df -h
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.vcpkg_triplet }}
@@ -76,6 +78,7 @@ jobs:
       MIXXX_VERSION: 2.6
     name: ${{ matrix.deps_name }}
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
     steps:
     - name: Check out git repository
       uses: actions/checkout@v4
@@ -85,6 +88,20 @@ jobs:
       # Workaround for issues https://github.com/microsoft/vcpkg/issues/8272  
       # and https://github.com/actions/checkout/issues/197 
       # to keep the build path short and work around size limits on the windows runner D: drive 
+    - name: "[Rocky8] Install dependencies for vcpkg"
+      if: matrix.container == 'rockylinux:8'
+      run: |
+          dnf install -y gcc-toolset-12 cmake ninja-build git \
+            autoconf autoconf-archive automake bison flex nasm pkgconfig \
+            python3-jinja2 alsa-lib-devel mesa-libEGL-devel mesa-libGL-devel \
+            mesa-libGLU-devel mesa-libgbm-devel libdrm-devel libSM-devel libudev-devel \
+            libX11-devel libxcb-devel libXi-devel libXrandr-devel libXrender-devel \
+            libxkbcommon-devel libxkbcommon-x11-devel libtool-ltdl-devel \
+            glibc-devel kernel-headers
+          source /opt/rh/gcc-toolset-12/enable
+          echo "PATH=${PATH}" >> "${GITHUB_ENV}"
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
+
     - name: Move checkout
       run: cmake -E copy_directory ${{ github.workspace }}/mixxx-vcpkg ${{ matrix.vcpkg_path }}
        
@@ -97,7 +114,7 @@ jobs:
           xcrun --show-sdk-version
 
     - name: "[Ubuntu] Install dependencies for nuget & vcpkg"
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && !matrix.container
       run: |
           # Install all dependencies needed for the host (x64-linux).
           # Most of them are related to Qt-related ports build.
