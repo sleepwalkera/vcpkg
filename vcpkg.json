@@ -118,10 +118,6 @@
       "version": "2.13.1"
     },
     {
-      "name": "freetype",
-      "version": "2.11.1"
-    },
-    {
       "name": "harfbuzz",
       "version": "2.7.4"
     },
