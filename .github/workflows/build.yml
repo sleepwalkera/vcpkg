@@ -38,6 +38,9 @@ jobs:
       uses: actions/checkout@v4
       with:
         path: mixxx-vcpkg
+        # [TEMP pin-floor] Full history so vcpkg can resolve the
+        # builtin-baseline and the overridden port git-trees.
+        fetch-depth: 0
 
       # The ephemeral space doesn't seem consistent between runs. Sometimes it is available directly on the root (/), sometime on the mount folder (/mnt)
       # If the ephemeral storage is available under a seperate drive, we bind-mount as thee `vcpkg_path`
