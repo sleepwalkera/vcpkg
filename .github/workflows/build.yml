@@ -22,6 +22,7 @@ jobs:
             vcpkg_triplet: x64-windows
             vcpkg_host_triplet: x64-windows
             check_disk_space: Get-PSDrive
+            vcpkg_max_concurrency: 4
           - os: ubuntu-22.04
             deps_name: x64-linux
             vcpkg_path: /home/runner/mixxx-vcpkg
@@ -30,6 +31,7 @@ jobs:
             vcpkg_host_triplet: x64-linux
             container: rockylinux:8
             check_disk_space: df -h
+            vcpkg_max_concurrency: 2
           - os: ubuntu-22.04-arm
             deps_name: arm64-linux
             vcpkg_path: /home/runner/mixxx-vcpkg
@@ -38,12 +40,17 @@ jobs:
             vcpkg_host_triplet: arm64-linux
             container: rockylinux:8
             check_disk_space: df -h
+            vcpkg_max_concurrency: 2
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.vcpkg_triplet }}
       VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.vcpkg_host_triplet }}
       DEPS_BASE_NAME: mixxx-deps
       DEVELOPER_DIR: ${{ matrix.developer_dir }}
       MIXXX_VERSION: 2.6
+      # Cap the per-port build parallelism (drives the CMake/ninja -j value).
+      # qtdeclarative's debug build exhausts the memory of the Linux runners at
+      # the default core count (OOM, exit 137); -j2 keeps peak memory in check.
+      VCPKG_MAX_CONCURRENCY: ${{ matrix.vcpkg_max_concurrency }}
     name: ${{ matrix.deps_name }}
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
