@@ -1,11 +1,14 @@
 {
   "name": "mixxx",
   "version": "2.5.0",
+  "builtin-baseline": "ed30b84124e657a0d827ce72c0c764fb154b3f7b",
   "description": "Mixxx is free cross platform DJ software",
   "homepage": "https://mixxx.org/",
   "license": "GPL-2.0-or-later",
   "supports": "!uwp",
-  "default-features": ["qt6"],
+  "default-features": [
+    "qt6"
+  ],
   "features": {
     "qt5": {
       "description": "Build with Qt 5",
@@ -26,14 +29,14 @@
           "name": "qtbase",
           "features": [
             "shared-mime-info"
-          ]      
+          ]
         },
         "qtdeclarative",
         {
           "name": "qtmultimedia",
           "features": [
             "qml"
-          ]      
+          ]
         },
         "qtapplicationmanager",
         "qtsvg",
@@ -54,7 +57,7 @@
       "features": [
         "fedora-ffmpeg-free-safe",
         "ffmpeg"
-      ]      
+      ]
     },
     "fftw3",
     {
@@ -85,7 +88,7 @@
     "libopusenc",
     "libsndfile",
     "libusb",
-    "libvorbis",    
+    "libvorbis",
     "lilv",
     "mp3lame",
     "ms-gsl",
@@ -93,7 +96,9 @@
     "opusfile",
     {
       "name": "portaudio",
-      "features": ["asio"]
+      "features": [
+        "asio"
+      ]
     },
     "portmidi",
     "protobuf",
