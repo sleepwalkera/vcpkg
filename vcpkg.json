@@ -106,5 +106,27 @@
       "platform": "linux"
     },
     "wavpack"
+  ],
+  "overrides": [
+    {
+      "name": "fontconfig",
+      "version": "2.13.1"
+    },
+    {
+      "name": "freetype",
+      "version": "2.11.1"
+    },
+    {
+      "name": "harfbuzz",
+      "version": "2.7.4"
+    },
+    {
+      "name": "alsa",
+      "version": "1.2.6.1"
+    },
+    {
+      "name": "jack2",
+      "version": "1.9.19"
+    }
   ]
 }
