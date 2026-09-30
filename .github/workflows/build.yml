@@ -18,12 +18,14 @@ jobs:
           # [TEMP pin-floor] Matrix trimmed to x64-linux only for a fast
           # signal on whether pinning the delegated libs to the 22.04 floor
           # breaks the build (Qt's minimum version checks are the main risk).
-          - os: ubuntu-22.04
-            deps_name: x64-linux
+          # [TEMP pin-floor] x64-linux already green at this head; arm64-linux
+          # confirms the same pins on the other Linux target.
+          - os: ubuntu-22.04-arm
+            deps_name: arm64-linux
             vcpkg_path: /home/runner/mixxx-vcpkg
             vcpkg_bootstrap: ./bootstrap-vcpkg.sh
-            vcpkg_triplet: x64-linux
-            vcpkg_host_triplet: x64-linux
+            vcpkg_triplet: arm64-linux
+            vcpkg_host_triplet: arm64-linux
             check_disk_space: df -h
     env:
       VCPKG_DEFAULT_TRIPLET: ${{ matrix.vcpkg_triplet }}
