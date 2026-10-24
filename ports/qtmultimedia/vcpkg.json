@@ -21,7 +21,7 @@
   ],
   "default-features": [
     {
-      "name": "gstreamer",
+      "name": "ffmpeg",
       "platform": "linux"
     },
     "widgets"
