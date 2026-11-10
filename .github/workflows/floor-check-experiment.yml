@@ -1,7 +1,9 @@
 name: Floor check experiment red blue
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - exp-floor-redblue
 
 jobs:
   red-blue:
