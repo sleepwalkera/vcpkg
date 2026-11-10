@@ -8,6 +8,7 @@ on:
 jobs:
   abi:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
         flags: ["-compilertracking", "compilertracking"]
@@ -23,6 +24,6 @@ jobs:
         run: |
           set -euo pipefail
           flags="${{ matrix.flags }}"
-          ./vcpkg install zlib:x64-linux --feature-flags="$flags" | tee /tmp/v.log
+          ./vcpkg install zlib:x64-linux --classic --feature-flags="$flags" 2>&1 | tee /tmp/v.log
           grep -m1 'package ABI' /tmp/v.log || true
           echo "flags=$flags on ${{ matrix.os }}"
