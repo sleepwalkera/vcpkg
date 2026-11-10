@@ -250,24 +250,15 @@ jobs:
       run: ./vcpkg install --vcpkg-root=${{ matrix.vcpkg_path }} --clean-after-build --recurse --feature-flags="compilertracking,manifests,registries,versions" --x-abi-tools-use-exact-versions
       working-directory: ${{ matrix.vcpkg_path }}
 
-    # The AppImage jobs build on ubuntu-22.04. The NuGet binary cache is shared
-    # across build hosts, so a restored host binary can slip in that was built
-    # with a newer toolchain and cannot run here. Audit the restored host tools
-    # against this host's own libc/libstdc++ before the buildenv is exported.
+    # The AppImage jobs build on ubuntu-22.04. Host tools restored from the NuGet
+    # binary cache may have been built on a newer host and require a newer glibc.
+    # Check the restored host tools against this host's own libc/libstdc++
+    # before the buildenv is exported.
     - name: Audit host tools against the build host ABI floor
       if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-22.04-arm'
       shell: bash
       working-directory: ${{ matrix.vcpkg_path }}
-      run: |
-        set -euo pipefail
-        toolsdir="vcpkg_installed/${{ matrix.vcpkg_triplet }}/tools"
-        libdir="vcpkg_installed/${{ matrix.vcpkg_triplet }}/lib"
-        [ -d "$toolsdir" ] || exit 0
-        while IFS= read -r -d '' f; do
-          file "$f" | grep -q 'ELF' || continue
-          python3 .github/check_appimage_floor_deps.py "$f" "$libdir"
-        done < <(find "$toolsdir" -type f -print0)
-        echo "$toolsdir: host tools meet the build host ABI floor"
+      run: bash .github/check_buildenv_floor.sh "vcpkg_installed/${{ matrix.vcpkg_triplet }}/tools"
       
     - name: "[Windows] Sign release DLLs"
       env:
