@@ -1,0 +1,28 @@
+name: compilertracking ABI proof
+
+on:
+  push:
+    branches:
+      - exp-abi-proof
+
+jobs:
+  abi:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+        flags: ["-compilertracking", "compilertracking"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Bootstrap vcpkg
+        run: ./bootstrap-vcpkg.sh
+
+      - name: Install zlib and print the package ABI fingerprint
+        run: |
+          set -euo pipefail
+          flags="${{ matrix.flags }}"
+          ./vcpkg install zlib:x64-linux --feature-flags="$flags" | tee /tmp/v.log
+          grep -m1 'package ABI' /tmp/v.log || true
+          echo "flags=$flags on ${{ matrix.os }}"
