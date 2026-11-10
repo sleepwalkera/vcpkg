@@ -12,43 +12,53 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
-      - name: Install readelf
+      - name: Install tooling
         run: sudo apt-get update && sudo apt-get install -y binutils
 
-      - name: Red, the poisoned x64-linux buildenv 14164a5c must fail the audit
+      - name: Red, poisoned buildenv 14164a5c must fail the audit
+        id: red
         run: |
           set -euo pipefail
           url="https://downloads.mixxx.org/dependencies/2.7-rel/Linux/mixxx-deps-2.7-x64-linux-rel-14164a5c.zip"
           mkdir -p /tmp/red && cd /tmp/red
           curl -sL -o a.zip "$url"
-          unzip -q a.zip 'installed/x64-linux-release/tools/*' 'installed/x64-linux-release/lib/*'
-          toolsdir="installed/x64-linux-release/tools"
-          libdir="installed/x64-linux-release/lib"
-          set +e
+          unzip -qq a.zip
+          toolsdir=$(find . -type d -path '*installed/x64-linux-release/tools' | head -1)
+          libdir=$(find . -type d -path '*installed/x64-linux-release/lib' | head -1)
+          echo "toolsdir=$toolsdir libdir=$libdir"
+          [ -n "$toolsdir" ] && [ -n "$libdir" ] || { echo "layout not found"; exit 1; }
+          failed=0
           while IFS= read -r -d '' f; do
-            file "$f" | grep -q 'ELF' || continue
-            python3 "$GITHUB_WORKSPACE/.github/check_appimage_floor_deps.py" "$f" "$libdir"
+            file "$f" | grep -q ELF || continue
+            python3 "$GITHUB_WORKSPACE/.github/check_appimage_floor_deps.py" "$f" "$libdir" || failed=1
           done < <(find "$toolsdir" -type f -print0)
-          rc=$?
-          set -e
-          echo "red audit rc=$rc"
-          if [ "$rc" = 0 ]; then
-            echo "expected the poisoned buildenv to fail the audit, it passed"
-            exit 1
-          fi
-          echo "red audit correctly failed"
+          echo "red_failed=$failed"
+          echo "red_failed=$failed" >> "$GITHUB_ENV"
 
-      - name: Blue, the good x64-linux buildenv c2a79b5e must pass the audit
+      - name: Blue, clean buildenv c2a79b5e must pass the audit
+        id: blue
         run: |
           set -euo pipefail
           url="https://downloads.mixxx.org/dependencies/2.7-rel/Linux/mixxx-deps-2.7-x64-linux-rel-c2a79b5e.zip"
           mkdir -p /tmp/blue && cd /tmp/blue
           curl -sL -o a.zip "$url"
-          unzip -q a.zip 'installed/x64-linux-release/tools/*' 'installed/x64-linux-release/lib/*'
-          toolsdir="installed/x64-linux-release/tools"
-          libdir="installed/x64-linux-release/lib"
+          unzip -qq a.zip
+          toolsdir=$(find . -type d -path '*installed/x64-linux-release/tools' | head -1)
+          libdir=$(find . -type d -path '*installed/x64-linux-release/lib' | head -1)
+          echo "toolsdir=$toolsdir libdir=$libdir"
+          [ -n "$toolsdir" ] && [ -n "$libdir" ] || { echo "layout not found"; exit 1; }
+          failed=0
           while IFS= read -r -d '' f; do
-            file "$f" | grep -q 'ELF' || continue
-            python3 "$GITHUB_WORKSPACE/.github/check_appimage_floor_deps.py" "$f" "$libdir"
+            file "$f" | grep -q ELF || continue
+            python3 "$GITHUB_WORKSPACE/.github/check_appimage_floor_deps.py" "$f" "$libdir" || failed=1
           done < <(find "$toolsdir" -type f -print0)
-          echo "blue audit passed"
+          echo "blue_failed=$failed"
+          echo "blue_failed=$failed" >> "$GITHUB_ENV"
+
+      - name: Assert red failed and blue passed
+        run: |
+          set -euo pipefail
+          echo "red_failed=${red_failed:-unset} blue_failed=${blue_failed:-unset}"
+          [ "${red_failed:-}" = 1 ] || { echo "ASSERT FAIL, poisoned buildenv passed the audit"; exit 1; }
+          [ "${blue_failed:-}" = 0 ] || { echo "ASSERT FAIL, clean buildenv failed the audit"; exit 1; }
+          echo "VALIDATED poisoned buildenv fails the audit while the clean buildenv passes"
