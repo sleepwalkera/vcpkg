@@ -24,14 +24,13 @@ jobs:
           curl -sL -o a.zip "$url"
           unzip -qq a.zip
           toolsdir=$(find . -type d -path '*installed/x64-linux-release/tools' | head -1)
-          libdir=$(find . -type d -path '*installed/x64-linux-release/lib' | head -1)
-          echo "toolsdir=$toolsdir libdir=$libdir"
-          [ -n "$toolsdir" ] && [ -n "$libdir" ] || { echo "layout not found"; exit 1; }
-          failed=0
-          while IFS= read -r -d '' f; do
-            file "$f" | grep -q ELF || continue
-            python3 "$GITHUB_WORKSPACE/.github/check_appimage_floor_deps.py" "$f" "$libdir" || failed=1
-          done < <(find "$toolsdir" -type f -print0)
+          echo "toolsdir=$toolsdir"
+          [ -n "$toolsdir" ] || { echo "layout not found"; exit 1; }
+          set +e
+          bash "$GITHUB_WORKSPACE/.github/check_buildenv_floor.sh" "$toolsdir"
+          rc=$?
+          set -e
+          if [ "$rc" = 0 ]; then failed=0; else failed=1; fi
           echo "red_failed=$failed"
           echo "red_failed=$failed" >> "$GITHUB_ENV"
 
@@ -44,14 +43,13 @@ jobs:
           curl -sL -o a.zip "$url"
           unzip -qq a.zip
           toolsdir=$(find . -type d -path '*installed/x64-linux-release/tools' | head -1)
-          libdir=$(find . -type d -path '*installed/x64-linux-release/lib' | head -1)
-          echo "toolsdir=$toolsdir libdir=$libdir"
-          [ -n "$toolsdir" ] && [ -n "$libdir" ] || { echo "layout not found"; exit 1; }
-          failed=0
-          while IFS= read -r -d '' f; do
-            file "$f" | grep -q ELF || continue
-            python3 "$GITHUB_WORKSPACE/.github/check_appimage_floor_deps.py" "$f" "$libdir" || failed=1
-          done < <(find "$toolsdir" -type f -print0)
+          echo "toolsdir=$toolsdir"
+          [ -n "$toolsdir" ] || { echo "layout not found"; exit 1; }
+          set +e
+          bash "$GITHUB_WORKSPACE/.github/check_buildenv_floor.sh" "$toolsdir"
+          rc=$?
+          set -e
+          if [ "$rc" = 0 ]; then failed=0; else failed=1; fi
           echo "blue_failed=$failed"
           echo "blue_failed=$failed" >> "$GITHUB_ENV"
 
