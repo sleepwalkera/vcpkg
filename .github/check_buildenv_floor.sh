@@ -34,20 +34,23 @@ case "$(uname -m)" in
 esac
 
 locate_lib() {
-    # $1: regex for the soname (anchored at end), $2: name for error reporting.
+    # $1: exact soname, e.g. libstdc++.so.6. grep -F, no regex escaping.
+    local soname="$1"
     local out
     if [ -n "$triplet" ]; then
-        out=$("$ldconfig_cmd" -p | awk -v r="$1" -v t="$triplet" '$NF ~ r && $NF ~ t {print $NF; exit}')
+        out=$("$ldconfig_cmd" -p | grep -F "${triplet}/${soname}" | awk '{print $NF}' | head -n1)
     else
-        out=$("$ldconfig_cmd" -p | awk -v r="$1" '$NF ~ r {print $NF; exit}')
+        out=$("$ldconfig_cmd" -p | grep -F "${soname}" | awk '{print $NF}' | head -n1)
     fi
-    [ -n "$out" ] || { echo "cannot locate host $2" >&2; exit 2; }
     printf '%s\n' "$out"
 }
 
-libc="$(locate_lib 'libc\.so\.6$' libc)"
-libstdcpp="$(locate_lib 'libstdc\+\+\.so\.6$' libstdc++)"
-libgcc_s="$(locate_lib 'libgcc_s\.so\.1$' libgcc_s)"
+libc="$(locate_lib 'libc.so.6')"
+[ -n "$libc" ] || { echo "cannot locate host libc" >&2; exit 2; }
+libstdcpp="$(locate_lib 'libstdc++.so.6')"
+[ -n "$libstdcpp" ] || { echo "cannot locate host libstdc++" >&2; exit 2; }
+libgcc_s="$(locate_lib 'libgcc_s.so.1')"
+[ -n "$libgcc_s" ] || { echo "cannot locate host libgcc_s" >&2; exit 2; }
 
 # Version nodes the host provides: definition data of the host libraries.
 namespaces='(GLIBC|GLIBCXX|CXXABI|GCC)_[0-9.]+'
