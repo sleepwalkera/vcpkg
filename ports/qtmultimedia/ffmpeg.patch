@@ -1,8 +1,6 @@
-diff --git a/cmake/FindFFmpeg.cmake b/cmake/FindFFmpeg.cmake
-index decac97dc..672991080 100644
 --- a/cmake/FindFFmpeg.cmake
 +++ b/cmake/FindFFmpeg.cmake
-@@ -282,10 +282,10 @@ function(__ffmpeg_internal_set_dependencies _component)
+@@ -294,10 +294,10 @@
          set(suffix_lib "\\.lib($| )")
          set(framework_regex "-framework [A-Za-z0-9_]*")
  
@@ -17,7 +15,7 @@ index decac97dc..672991080 100644
  
          foreach(dependency IN LISTS libs_dependency)
              string(REGEX REPLACE ${prefix_l} "" dependency ${dependency})
-@@ -298,9 +298,10 @@ function(__ffmpeg_internal_set_dependencies _component)
+@@ -310,9 +310,10 @@
          endforeach()
  
          # we don't link private dependencies, but just populate the FFMPEG_STUBS
@@ -31,3 +29,11 @@ index decac97dc..672991080 100644
  
          foreach(dependency IN LISTS libs_private_dependency)
              string(REGEX REPLACE ${prefix_l} "" dependency ${dependency})
+@@ -342,6 +343,7 @@
+             target_compile_options(${_target} INTERFACE "${${_component}_CFLAGS}")
+             target_include_directories(${_target} INTERFACE "${${_component}_INCLUDE_DIR}")
+             target_link_libraries(${_target} INTERFACE "${${_component}_LIBRARY}")
++            target_link_directories(${_target} INTERFACE ${${_component}_LIBRARY_DIR})
+ 
+             __ffmpeg_internal_set_dependencies(${_component})
+             if (UNIX AND NOT APPLE)
