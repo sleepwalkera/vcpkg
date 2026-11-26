@@ -192,14 +192,15 @@ jobs:
           source /opt/rh/gcc-toolset-12/enable
           echo "PATH=${PATH}" >> "${GITHUB_ENV}"
           echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
-          # vcpkg's compiler probe resolves PATH entries relative to the
+          # vcpkg's compiler probe re-roots the PATH entries through the
           # installed prefix, then falls back to /usr/bin/cc, which on this
-          # image is the system GCC 8 (the image ships no /usr/bin/c++, so
-          # only C++ lands on the toolset). Pin both compilers explicitly so
-          # the whole buildenv is GCC 12; pipewire 1.6.7, for example, does
-          # not compile with GCC 8.
-          echo "CC=$(command -v gcc)" >> "${GITHUB_ENV}"
-          echo "CXX=$(command -v g++)" >> "${GITHUB_ENV}"
+          # image is the system GCC 8; the image ships no /usr/bin/c++, so C++
+          # already lands on the toolset. Point /usr/bin/cc at the toolset so
+          # C and C++ are both GCC 12 (pipewire 1.6.7 does not compile with
+          # GCC 8, and mixing the two compilers breaks libffi's aarch64
+          # atomics). Cross builds (android) get their compiler from the NDK
+          # toolchain and are unaffected.
+          ln -sfn "$(command -v gcc)" /usr/bin/cc
           # The container has no /home/runner directory; the vcpkg_path
           # used by the later steps lives there.
           mkdir -p /home/runner
