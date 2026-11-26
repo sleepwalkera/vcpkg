@@ -120,7 +120,7 @@ jobs:
           dnf config-manager --set-enabled powertools
           dnf install -y gcc-toolset-12 libatomic cmake ninja-build git curl unzip zip tar perl \
             rsync openssh-clients mono-complete \
-            file binutils java-17-openjdk-headless \
+            file binutils java-17-openjdk-devel \
             perl-IPC-Cmd perl-Data-Dumper perl-Text-Template perl-Time-HiRes perl-Test-Harness \
             autoconf autoconf-archive autoconf2.7x automake bison flex nasm pkgconfig \
             python39 python39-jinja2 alsa-lib-devel pulseaudio-libs-devel \
