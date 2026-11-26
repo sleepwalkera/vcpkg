@@ -132,6 +132,14 @@ jobs:
             libxkbcommon-devel libxkbcommon-x11-devel libtool libtool-ltdl-devel \
             gettext gettext-devel \
             glibc-devel kernel-headers
+          # gperf 3.3 (and possibly other 2.7 ports) regenerate their build
+          # system with autoreconf, which needs autoconf >= 2.70. Rocky 8
+          # ships 2.69, so build a current autoconf into /usr/local, which is
+          # ahead of /usr/bin on the PATH.
+          curl -fsSL -o /tmp/autoconf.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.gz
+          echo "afb181a76e1ee72832f6581c0eddf8df032b83e2e0239ef79ebedc4467d92d6e  /tmp/autoconf.tar.gz" | sha256sum -c -
+          tar -C /tmp -xf /tmp/autoconf.tar.gz
+          (cd /tmp/autoconf-2.72 && ./configure --prefix=/usr/local >/dev/null && make -j"$(nproc)" >/dev/null && make install >/dev/null)
           # RHEL 8's default python3 (3.6) is too old for meson; use python39.
           alternatives --set python3 /usr/bin/python3.9
           source /opt/rh/gcc-toolset-12/enable
