@@ -122,7 +122,7 @@ jobs:
             rsync openssh-clients mono-complete \
             file binutils java-17-openjdk-headless \
             perl-IPC-Cmd perl-Data-Dumper perl-Text-Template perl-Time-HiRes perl-Test-Harness \
-            autoconf autoconf-archive automake bison flex nasm pkgconfig \
+            autoconf autoconf-archive autoconf2.7x automake bison flex nasm pkgconfig \
             python39 python39-jinja2 alsa-lib-devel pulseaudio-libs-devel \
             mesa-libEGL-devel mesa-libGL-devel mesa-libgbm-devel \
             mesa-libGLU-devel libdrm-devel libSM-devel libudev-devel \
@@ -134,12 +134,12 @@ jobs:
             glibc-devel kernel-headers
           # gperf 3.3 (and possibly other 2.7 ports) regenerate their build
           # system with autoreconf, which needs autoconf >= 2.70. Rocky 8
-          # ships 2.69, so build a current autoconf into /usr/local, which is
-          # ahead of /usr/bin on the PATH.
-          curl -fsSL -o /tmp/autoconf.tar.gz https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.gz
-          echo "afb181a76e1ee72832f6581c0eddf8df032b83e2e0239ef79ebedc4467d92d6e  /tmp/autoconf.tar.gz" | sha256sum -c -
-          tar -C /tmp -xf /tmp/autoconf.tar.gz
-          (cd /tmp/autoconf-2.72 && ./configure --prefix=/usr/local >/dev/null && make -j"$(nproc)" >/dev/null && make install >/dev/null)
+          # ships 2.69, but EPEL provides 2.71 side-by-side as
+          # /usr/bin/autoconf27 etc. Shadow the system commands through
+          # /usr/local/bin, which precedes /usr/bin on the PATH.
+          for tool in autoconf autoheader autom4te autoreconf autoscan autoupdate ifnames; do
+            ln -sf "/usr/bin/${tool}27" "/usr/local/bin/${tool}"
+          done
           # libsystemd 260 compiles raw syscall shims for calls the libc does
           # not provide (pidfd_open, mount_setattr, fsopen, ...) and no longer
           # carries its own __NR_* fallbacks, so it needs kernel UAPI headers
