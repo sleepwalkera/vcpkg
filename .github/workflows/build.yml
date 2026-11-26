@@ -108,16 +108,17 @@ jobs:
 
       # The Linux buildenvs used to be built on the ubuntu-22.04 runner
       # images, which GitHub retires in spring 2027. Build them in the same
-      # Rocky 8 container as the 2.6 buildenv and AppImage jobs instead: the
-      # runtime floor stays glibc 2.28, and gcc-toolset-15 keeps the build
-      # compiler at least as new as the one Ubuntu 26.04 ships (15.2).
+      # Rocky 8 container and with the same gcc-toolset-12 as the 2.6
+      # buildenv and AppImage jobs instead: the runtime floor stays glibc
+      # 2.28, and GCC 12 is a stable toolset on Rocky 8, well above the
+      # compiler level Qt and the 2.7 ports require.
     - name: "[Rocky8] Install dependencies for vcpkg"
       if: matrix.container == 'rockylinux:8'
       shell: bash
       run: |
           dnf install -y epel-release dnf-plugins-core
           dnf config-manager --set-enabled powertools
-          dnf install -y gcc-toolset-15 libatomic cmake ninja-build git curl unzip zip tar perl \
+          dnf install -y gcc-toolset-12 libatomic cmake ninja-build git curl unzip zip tar perl \
             rsync openssh-clients mono-complete \
             file binutils java-17-openjdk-headless \
             perl-IPC-Cmd perl-Data-Dumper perl-Text-Template perl-Time-HiRes perl-Test-Harness \
@@ -133,7 +134,7 @@ jobs:
             glibc-devel kernel-headers
           # RHEL 8's default python3 (3.6) is too old for meson; use python39.
           alternatives --set python3 /usr/bin/python3.9
-          source /opt/rh/gcc-toolset-15/enable
+          source /opt/rh/gcc-toolset-12/enable
           echo "PATH=${PATH}" >> "${GITHUB_ENV}"
           echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
           # The container has no /home/runner directory; the vcpkg_path
