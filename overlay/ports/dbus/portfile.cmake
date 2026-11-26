@@ -14,6 +14,10 @@ vcpkg_from_gitlab(
         libsystemd.patch
 )
 
+# The systemd feature stays opt-in: its only effect is sd_notify and socket
+# activation in the dbus-daemon, which Mixxx does not ship or run, and
+# libsystemd >= 257 requires a glibc newer than the 2.28 floor the Linux
+# buildenv targets. Mixxx links libdbus through Qt, which is unaffected.
 vcpkg_check_features(OUT_FEATURE_OPTIONS options
     FEATURES
         systemd ENABLE_SYSTEMD

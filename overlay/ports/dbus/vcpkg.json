@@ -17,12 +17,6 @@
       "host": true
     }
   ],
-  "default-features": [
-    {
-      "name": "systemd",
-      "platform": "linux"
-    }
-  ],
   "features": {
     "systemd": {
       "description": "Build with systemd at_console support",
