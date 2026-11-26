@@ -265,7 +265,9 @@ jobs:
           # official command line tools and install our exact pins with
           # sdkmanager, the same flow actions/runner-images uses. The android
           # host tools then share the container floor with the linux buildenvs.
-          sdk_root=/opt/android-sdk
+          # The path is the one overlay/triplets/arm64-android.cmake expects
+          # (Qt checks the ANDROID_SDK_ROOT CMake variable from the triplet).
+          sdk_root=/usr/lib/android-sdk
           mkdir -p "${sdk_root}/cmdline-tools"
           curl -fsSL -o /tmp/commandlinetools.zip \
             https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
