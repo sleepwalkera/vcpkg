@@ -67,7 +67,11 @@ jobs:
             vcpkg_bootstrap: ./bootstrap-vcpkg.sh
             vcpkg_triplet: x64-linux
             vcpkg_host_triplet: x64-linux
-            container: rockylinux:8
+            container:
+              image: rockylinux:8
+              volumes:
+                - "/:/host"
+            linux_container: true
             check_disk_space: df -h
             vcpkg_max_concurrency: 2
           - os: ubuntu-24.04-arm
@@ -76,7 +80,11 @@ jobs:
             vcpkg_bootstrap: ./bootstrap-vcpkg.sh
             vcpkg_triplet: arm64-linux
             vcpkg_host_triplet: arm64-linux
-            container: rockylinux:8
+            container:
+              image: rockylinux:8
+              volumes:
+                - "/:/host"
+            linux_container: true
             check_disk_space: df -h
             vcpkg_max_concurrency: 2
           - os: ubuntu-24.04
@@ -88,7 +96,11 @@ jobs:
             android_api: 36
             android_version: 36.0.0
             android_ndk: 27.2.12479018
-            container: rockylinux:8
+            container:
+              image: rockylinux:8
+              volumes:
+                - "/:/host"
+            linux_container: true
             check_disk_space: df -h
             vcpkg_max_concurrency: 2
     env:
@@ -106,6 +118,41 @@ jobs:
       with:
         path: mixxx-vcpkg
 
+      # The job container writes to the runner's root disk and cannot see the
+      # ephemeral mount, and a full 2.7 debug+release build does not fit in the
+      # root disk. The runner root is mounted at /host, so drop the tool caches
+      # a container build does not use (the same paths the old ubuntu-22.04
+      # buildenv job freed on the host directly).
+    - name: "[Rocky8] Free space on the runner disk"
+      if: matrix.linux_container
+      shell: bash
+      run: |
+          rm -rf /host/home/packer                 # Free up 677M
+          rm -rf /host/opt/az                      # Free up 649M
+          rm -rf /host/opt/google                  # Free up 378M
+          rm -rf /host/opt/hostedtoolcache/CodeQL  # Free up 1.6G
+          rm -rf /host/opt/hostedtoolcache/go      # Free up 808M
+          rm -rf /host/opt/hostedtoolcache/node    # Free up 532M
+          rm -rf /host/opt/hostedtoolcache/PyPy    # Free up 520M
+          rm -rf /host/opt/hostedtoolcache/Python  # Free up 1.5G
+          rm -rf /host/opt/microsoft               # Free up 781M
+          rm -rf /host/opt/pipx                    # Free up 499M
+          rm -rf /host/usr/lib/google-cloud-sdk    # Free up 957M
+          rm -rf /host/usr/local/julia*            # Free up ~1G
+          rm -rf /host/usr/local/share/powershell  # Free up 1.3G
+          rm -rf /host/usr/share/dotnet            # Free up 3.4G
+          rm -rf /host/usr/share/swift             # Free up 3.2G
+          rm -rf /host/usr/local/share/vcpkg       # duplicate vcpkg checkout
+          rm -rf /host/opt/ghc                     # Free up ~2G (Haskell)
+          rm -rf /host/usr/local/graalvm           # Free up ~1G
+          rm -rf /host/usr/local/lib/node_modules  # Free up ~500M
+          rm -rf /host/usr/share/postgresql        # Free up ~1G
+          rm -rf /host/usr/share/mysql             # Free up ~800M
+          rm -rf /host/usr/local/lib/php           # Free up ~600M
+          rm -rf /host/opt/hostedtoolcache/Ruby    # Free up ~300M
+          rm -rf /host/opt/hostedtoolcache/Rust    # Free up ~700M
+          df -h /
+
       # The Linux buildenvs used to be built on the ubuntu-22.04 runner
       # images, which GitHub retires in spring 2027. Build them in the same
       # Rocky 8 container and with the same gcc-toolset-12 as the 2.6
@@ -113,7 +160,7 @@ jobs:
       # 2.28, and GCC 12 is a stable toolset on Rocky 8, well above the
       # compiler level Qt and the 2.7 ports require.
     - name: "[Rocky8] Install dependencies for vcpkg"
-      if: matrix.container == 'rockylinux:8'
+      if: matrix.linux_container
       shell: bash
       run: |
           dnf install -y epel-release dnf-plugins-core
@@ -154,7 +201,7 @@ jobs:
           chmod +x /usr/local/bin/nuget
 
     - name: Move checkout (container)
-      if: matrix.container == 'rockylinux:8'
+      if: matrix.linux_container
       shell: bash
       run: |
         mkdir -p "${{ matrix.vcpkg_path }}"
@@ -182,47 +229,6 @@ jobs:
           brew update-if-needed && brew install automake nasm autoconf-archive nuget ${{ matrix.brew_extra }}
           sudo xcode-select --switch "$DEVELOPER_DIR"
           xcrun --show-sdk-version
-
-    # Kept for a Linux job that runs directly on the runner image. The matrix
-    # currently has none; the container jobs install their dependencies in the
-    # Rocky8 step above.
-    - name: "[Ubuntu] Install dependencies for nuget & vcpkg"
-      if: runner.os == 'Linux' && matrix.container == null
-      run: |
-          # Install all dependencies needed for the host (x64-linux-release). 
-          # Most of them are related to Qt-related ports build also include some build essentials as well as the Android SDK manager
-          sudo apt-get update && \
-          sudo apt-get install -y \
-            '^libxcb.*-dev' \
-            autoconf \
-            autoconf-archive \
-            automake \
-            bison \
-            flex \
-            mono-complete \
-            libasound2-dev \
-            libegl1-mesa-dev \
-            libgl1-mesa-dev \
-            libdrm-dev \
-            libgbm-dev \
-            libghc-resolv-dev \
-            libglu1-mesa-dev \
-            libltdl-dev \
-            libsm-dev \
-            libudev-dev \
-            libx11-xcb-dev \
-            libxi-dev \
-            libxkbcommon-dev \
-            libxkbcommon-x11-dev \
-            libxrandr-dev \
-            libxrender-dev \
-            linux-libc-dev \
-            nasm \
-            pkg-config \
-            python3-jinja2
-          # Install NuGET
-          sudo curl -o /usr/local/bin/nuget https://dist.nuget.org/win-x86-commandline/v7.9.0/nuget.exe
-          sudo chmod +x /usr/local/bin/nuget
 
     - name: "Authenticate to GitHub Packages (readwrite)"
       if: github.event_name == 'push' && github.repository_owner == 'mixxxdj'
@@ -311,7 +317,7 @@ jobs:
     # published buildenv always runs on the floor. The audited directory is the
     # host triplet's (only == target triplet for the native linux buildenvs).
     - name: Audit host tools against the build host ABI floor
-      if: matrix.container == 'rockylinux:8'
+      if: matrix.linux_container
       shell: bash
       working-directory: ${{ matrix.vcpkg_path }}
       run: bash .github/check_buildenv_floor.sh "vcpkg_installed/${{ matrix.vcpkg_host_triplet }}/tools"
