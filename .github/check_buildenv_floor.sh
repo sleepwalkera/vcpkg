@@ -36,11 +36,25 @@ esac
 locate_lib() {
     # $1: exact soname, e.g. libstdc++.so.6. grep -F, no regex escaping.
     local soname="$1"
-    local out
+    local out=""
+    local dir
+    # Prefer the libraries the runtime actually resolves first. On Rocky 8 the
+    # gcc-toolset enable script puts its newer libstdc++ on LD_LIBRARY_PATH,
+    # and the host tools link against that one.
+    IFS=':' read -r -a ld_dirs <<< "${LD_LIBRARY_PATH:-}"
+    for dir in "${ld_dirs[@]}"; do
+        if [ -n "$dir" ] && [ -e "${dir}/${soname}" ]; then
+            printf '%s\n' "${dir}/${soname}"
+            return
+        fi
+    done
     if [ -n "$triplet" ]; then
         out=$("$ldconfig_cmd" -p | grep -F "${triplet}/${soname}" | awk '{print $NF}' | head -n1)
-    else
-        out=$("$ldconfig_cmd" -p | grep -F "${soname}" | awk '{print $NF}' | head -n1)
+    fi
+    # RHEL-family distributions keep the primary libraries in /lib64, which
+    # ldconfig does not tag with a glibc triplet, so fall back to the soname.
+    if [ -z "$out" ]; then
+        out=$("$ldconfig_cmd" -p | grep -F "/${soname}" | awk '{print $NF}' | head -n1)
     fi
     printf '%s\n' "$out"
 }
